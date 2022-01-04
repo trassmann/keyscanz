@@ -1,9 +1,6 @@
 name: Build & Publish
 
-on:
-  push:
-    tags:
-      - "*"
+on: push
 
 jobs:
   publish:
@@ -13,7 +10,7 @@ jobs:
       - uses: actions/setup-node@v2.5.1
         with:
           node-version: 14
-      - run: npm install
+      - run: npm ci
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
