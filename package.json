@@ -1,10 +1,13 @@
 {
   "name": "keyscan",
   "version": "0.0.1",
-  "description": "Scan for keys in git repos",
+  "description": "Scan git repos for keys and mnemonics",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "files": [
+    "dist/**/*"
+  ],
   "engines": {
     "node": ">=14.0.0"
   },
@@ -18,7 +21,11 @@
   },
   "keywords": [
     "git",
+    "repo",
     "key",
+    "privateKey",
+    "mnemonic",
+    "search",
     "scan"
   ],
   "author": "trassmann",
