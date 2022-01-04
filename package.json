@@ -1,0 +1,39 @@
+{
+  "name": "keyscan",
+  "version": "0.0.1",
+  "description": "Scan for keys in git repos",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trassmann/keyscan.git"
+  },
+  "keywords": [
+    "git",
+    "key",
+    "scan"
+  ],
+  "author": "trassmann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/trassmann/keyscan/issues"
+  },
+  "homepage": "https://github.com/trassmann/keyscan#readme",
+  "devDependencies": {
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "@types/node": "^17.0.8",
+    "bip39": "^3.0.4",
+    "lodash": "^4.17.21",
+    "simple-git": "^2.48.0"
+  }
+}
