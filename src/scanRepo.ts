@@ -8,6 +8,8 @@ const MNEMONIC_REGEX = /("|')(?:\b\w+\b[\s]*){12,25}("|')/gim;
 const HEX_KEY_0X_REGEX = /("|')(0[xX][0-9a-fA-F]{64})("|')/gim;
 const HEX_KEY_REGEX = /("|')([0-9a-fA-F]{64})("|')/gim;
 
+const MAX_COMMITS = 5000;
+
 const scanRepo = async (repoUrl: string) => {
   const git: SimpleGit = simpleGit({
     maxConcurrentProcesses: 10,
@@ -17,17 +19,16 @@ const scanRepo = async (repoUrl: string) => {
   await git.clone(repoUrl, dataDir);
   await git.cwd(dataDir);
 
-  const logDataAsc = await git.log({
-    maxCount: 1000,
+  const logData = await git.log({
     "--reverse": null,
   });
-  const logDataDesc = await git.log({
-    maxCount: 1000,
-  });
+  const allCommits = logData.all || [];
+  const commitsToCheck =
+    allCommits.length > MAX_COMMITS
+      ? _.take(allCommits, MAX_COMMITS)
+      : allCommits;
 
-  const commitHashes = _.uniq(
-    [...logDataAsc.all, ...logDataDesc.all].map((commit) => commit.hash)
-  );
+  const commitHashes = commitsToCheck.map((commit) => commit.hash);
   const commitScans = commitHashes.map(async (commitHash) => {
     try {
       const data = await git.show(commitHash);
