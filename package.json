@@ -1,5 +1,5 @@
 {
-  "name": "keyscan",
+  "name": "keyscanz",
   "version": "0.0.1",
   "description": "Scan git repos for keys and mnemonics",
   "main": "dist/index.js",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trassmann/keyscan.git"
+    "url": "git+https://github.com/trassmann/keyscanz.git"
   },
   "keywords": [
     "git",
@@ -31,9 +31,9 @@
   "author": "trassmann",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/trassmann/keyscan/issues"
+    "url": "https://github.com/trassmann/keyscanz/issues"
   },
-  "homepage": "https://github.com/trassmann/keyscan#readme",
+  "homepage": "https://github.com/trassmann/keyscanz#readme",
   "devDependencies": {
     "typescript": "^4.5.4"
   },

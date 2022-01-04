@@ -1,4 +1,4 @@
-# keyscan
+# keyscanz
 
 Scan git repos for private keys and mnemonics.
 
@@ -8,16 +8,16 @@ Scan git repos for private keys and mnemonics.
 ## Installation
 
 ```js
-npm install keyscan
+npm install keyscanz
 ```
 
 ## Usage
 
 ```js
-import keyscan from "keyscan";
+import keyscanz from "keyscanz";
 
 const runScan = async () => {
-  const results = await keyscan.github("trassmann/keyscan");
+  const results = await keyscanz.github("trassmann/keyscanz");
 
   // Results look like this:
   // {
