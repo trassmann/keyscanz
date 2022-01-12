@@ -4,9 +4,9 @@ import * as _ from "lodash";
 
 import { randomString, removeQuotes, validateMnemonic } from "./utils";
 
-const MNEMONIC_REGEX = /("|')(?:\b\w+\b[\s]*){12,25}("|')/gim;
-const HEX_KEY_0X_REGEX = /("|')(0[xX][0-9a-fA-F]{64})("|')/gim;
-const HEX_KEY_REGEX = /("|')([0-9a-fA-F]{64})("|')/gim;
+const MNEMONIC_REGEX = /("|'|\s)(?:\b\w+\b[\s]*){12,25}("|'|\s)/gim;
+const HEX_KEY_0X_REGEX = /("|'|\s)(0[xX][0-9a-fA-F]{64})("|'|\s)/gim;
+const HEX_KEY_REGEX = /("|'|\s)([0-9a-fA-F]{64})("|'|\s)/gim;
 
 const MAX_COMMITS = 5000;
 
