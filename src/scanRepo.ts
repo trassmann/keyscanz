@@ -10,14 +10,30 @@ const HEX_KEY_REGEX = /("|'|\s)([0-9a-fA-F]{64})("|'|\s)/gim;
 
 const MAX_COMMITS = 5000;
 
-const scanRepo = async (repoUrl: string) => {
+interface Results {
+  keys: string[];
+  keys0x: string[];
+  mnemonics: string[];
+}
+
+const scanRepo = async (repoUrl: string): Promise<Results> => {
   const git: SimpleGit = simpleGit({
     maxConcurrentProcesses: 10,
   });
 
   const dataDir = `./data/${randomString()}`;
-  await git.clone(repoUrl, dataDir);
-  await git.cwd(dataDir);
+
+  try {
+    await git.clone(repoUrl, dataDir);
+    await git.cwd(dataDir);
+  } catch (err) {
+    console.log("Failed to clone repo", repoUrl);
+    return {
+      keys: [],
+      keys0x: [],
+      mnemonics: [],
+    };
+  }
 
   const logData = await git.log({
     "--reverse": null,
