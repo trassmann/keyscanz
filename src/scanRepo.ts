@@ -10,7 +10,7 @@ const HEX_KEY_REGEX = /("|'|\s)([0-9a-fA-F]{64})("|'|\s)/gim;
 
 const MAX_COMMITS = 5000;
 
-interface Results {
+export interface Results {
   keys: string[];
   keys0x: string[];
   mnemonics: string[];
