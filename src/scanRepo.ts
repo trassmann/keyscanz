@@ -1,5 +1,13 @@
 import { promises as fs } from "fs";
-import * as git from "nodegit";
+import {
+  Diff,
+  Commit,
+  ConvenientPatch,
+  ConvenientHunk,
+  DiffLine,
+  Clone,
+  Revwalk,
+} from "nodegit";
 import * as _ from "lodash";
 import asyncPool from "tiny-async-pool";
 
@@ -50,8 +58,8 @@ export const createKeyData = (rawData: string = ""): Key => {
   return null;
 };
 
-const getMatches = async (hunk) => {
-  const lines = await hunk.lines();
+const getMatches = async (hunk: ConvenientHunk): Promise<string[]> => {
+  const lines: DiffLine[] = await hunk.lines();
   return lines.reduce((matchesResults, line) => {
     const matches = KEY_REGEX.exec(line.content());
     if (!matches) {
@@ -62,54 +70,73 @@ const getMatches = async (hunk) => {
   }, []);
 };
 
-const getPatchLines = async (patch) => {
-  const hunks = await patch.hunks();
-  const lines = await Promise.all(hunks.map(getMatches));
+const getPatchLines = async (patch: ConvenientPatch): Promise<string[]> => {
+  const hunks: ConvenientHunk[] = await patch.hunks();
+  const lines: string[][] = await Promise.all(hunks.map(getMatches));
 
   return lines.flat();
 };
 
-const getDiffKeys = async (diff) => {
+const getDiffKeys = async (diff: Diff) => {
   const patches = await diff.patches();
   const lines = await Promise.all(patches.map(getPatchLines));
 
   return lines.flat();
 };
 
-const getCommitKeys = async (commit) => {
+const getCommitKeys = async (commit: Commit): Promise<string[]> => {
   const diffList = await commit.getDiff();
   const diffKeys = await Promise.all(diffList.map(getDiffKeys));
 
   return diffKeys.flat();
 };
 
-const MAX_COMMITS = 5000;
+const MAX_COMMITS = 3000;
 
-const getKeys = async (repoUrl: string, dataDir: string) => {
-  const repo = await git.Clone(repoUrl, dataDir, { bare: 1 });
+const defaultResults: Results = {
+  hex: [],
+  mnemonic: [],
+};
+
+const getKeys = async (
+  repoUrl: string,
+  dataDir: string,
+  maxCommits: number = MAX_COMMITS
+): Promise<string[][]> => {
+  let repo;
+  try {
+    repo = await Clone.clone(repoUrl, dataDir, { bare: 1 });
+  } catch (err) {
+    console.log("Failed to clone repoUrl", err);
+    return null;
+  }
   const headCommit = await repo.getHeadCommit();
   const revWalk = repo.createRevWalk();
 
   revWalk.reset();
   revWalk.push(headCommit.id());
-  revWalk.sorting(git.Revwalk.SORT.TIME, git.Revwalk.SORT.REVERSE);
+  revWalk.sorting(Revwalk.SORT.TIME, Revwalk.SORT.REVERSE);
 
-  const commits = await revWalk.getCommits(MAX_COMMITS);
+  const commits = await revWalk.getCommits(maxCommits);
   const results = await asyncPool(100, commits, getCommitKeys);
 
   return results;
 };
 
 const scanRepo = async (repoUrl: string): Promise<Results> => {
-  const dataDir = `./data/${randomString()}`;
-  const allKeys = await getKeys(repoUrl, dataDir);
+  const dataDir: string = `./data/${randomString()}`;
+  const allKeys: string[][] = await getKeys(repoUrl, dataDir);
 
-  await fs.rm(dataDir, { recursive: true });
+  if (!allKeys) {
+    return defaultResults;
+  }
 
-  const defaultResults: Results = {
-    hex: [],
-    mnemonic: [],
-  };
+  try {
+    await fs.rm(dataDir, { recursive: true });
+  } catch (err) {
+    console.log("Failed to delete", dataDir, err);
+    return defaultResults;
+  }
 
   return _.uniq(allKeys.flat()).reduce((keyResults, rawKey) => {
     const key: Key = createKeyData(rawKey);

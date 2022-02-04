@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@types/node": "^17.0.14",
+    "@types/nodegit": "^0.27.9",
     "bip39": "^3.0.4",
     "lodash": "^4.17.21",
     "nodegit": "^0.27.0",
