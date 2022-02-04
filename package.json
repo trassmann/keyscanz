@@ -1,6 +1,6 @@
 {
   "name": "keyscanz",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Scan git repos for keys and mnemonics",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -41,6 +41,7 @@
     "bip39": "^3.0.4",
     "lodash": "^4.17.21",
     "nodegit": "^0.27.0",
+    "tiny-async-pool": "^1.2.0",
     "ts-node": "^10.4.0"
   }
 }

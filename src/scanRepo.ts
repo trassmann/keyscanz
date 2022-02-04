@@ -1,10 +1,12 @@
 import { promises as fs } from "fs";
 import * as git from "nodegit";
 import * as _ from "lodash";
+import asyncPool from "tiny-async-pool";
 
 import { randomString, validateMnemonic } from "./utils";
 
-const KEY_REGEX = /(?:\b\w{3,15}\b[\s]*){12,25}|(?:(0[xX])?[0-9a-fA-F]{64})/;
+const KEY_REGEX =
+  /(?<=["'])(?:\b[a-z]{3,8}\b[\s])(?:\b[a-z]{3,8}\b[\s]){10,23}(?:\b[a-z]{3,8}\b(?=["']))|(?:(0[xX])?[0-9a-fA-F]{64})/;
 
 export interface Key {
   type: KeyType;
@@ -74,33 +76,29 @@ const getDiffKeys = async (diff) => {
   return lines.flat();
 };
 
-const getKeys = async (repoUrl: string, dataDir: string) =>
-  new Promise(async (resolve, reject) => {
-    let repo;
-    try {
-      repo = await git.Clone(repoUrl, dataDir, { bare: 1 });
-    } catch (err) {
-      reject(`Failed to clone repo: ${err}`);
-    }
+const getCommitKeys = async (commit) => {
+  const diffList = await commit.getDiff();
+  const diffKeys = await Promise.all(diffList.map(getDiffKeys));
 
-    const headCommit = await repo.getHeadCommit();
-    const history = headCommit.history();
+  return diffKeys.flat();
+};
 
-    const allKeys = [];
+const MAX_COMMITS = 5000;
 
-    history.on("commit", async (commit) => {
-      const diffList = await commit.getDiff();
-      const diffKeys = await Promise.all(diffList.map(getDiffKeys));
+const getKeys = async (repoUrl: string, dataDir: string) => {
+  const repo = await git.Clone(repoUrl, dataDir, { bare: 1 });
+  const headCommit = await repo.getHeadCommit();
+  const revWalk = repo.createRevWalk();
 
-      allKeys.push(...diffKeys.flat());
-    });
+  revWalk.reset();
+  revWalk.push(headCommit.id());
+  revWalk.sorting(git.Revwalk.SORT.TIME, git.Revwalk.SORT.REVERSE);
 
-    history.on("end", () => {
-      resolve(allKeys);
-    });
+  const commits = await revWalk.getCommits(MAX_COMMITS);
+  const results = await asyncPool(100, commits, getCommitKeys);
 
-    history.start();
-  });
+  return results;
+};
 
 const scanRepo = async (repoUrl: string): Promise<Results> => {
   const dataDir = `./data/${randomString()}`;
@@ -113,7 +111,7 @@ const scanRepo = async (repoUrl: string): Promise<Results> => {
     mnemonic: [],
   };
 
-  return _.uniq(allKeys).reduce((keyResults, rawKey) => {
+  return _.uniq(allKeys.flat()).reduce((keyResults, rawKey) => {
     const key: Key = createKeyData(rawKey);
 
     if (!key) {
