@@ -16,7 +16,7 @@ export interface Results {
   mnemonic: string[];
 }
 
-enum KeyType {
+export enum KeyType {
   HEX = "HEX",
   MNEMONIC = "MNEMONIC",
 }
@@ -78,13 +78,13 @@ const getKeys = async (repoUrl: string, dataDir: string) =>
   new Promise(async (resolve, reject) => {
     let repo;
     try {
-      repo = await git.Clone(repoUrl, dataDir);
+      repo = await git.Clone(repoUrl, dataDir, { bare: 1 });
     } catch (err) {
       reject(`Failed to clone repo: ${err}`);
     }
 
     const headCommit = await repo.getHeadCommit();
-    const history = headCommit.history(git.Revwalk.SORT.TIME);
+    const history = headCommit.history();
 
     const allKeys = [];
 
