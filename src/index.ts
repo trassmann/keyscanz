@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import scanRepo from "./scanRepo";
 
 export const github = (repo) => scanRepo(`https://github.com/${repo}`);

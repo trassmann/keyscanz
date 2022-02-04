@@ -1,6 +1,6 @@
 {
   "name": "keyscanz",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "Scan git repos for keys and mnemonics",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,12 +34,13 @@
   },
   "homepage": "https://github.com/trassmann/keyscanz#readme",
   "devDependencies": {
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@types/node": "^17.0.8",
+    "@types/node": "^17.0.14",
     "bip39": "^3.0.4",
     "lodash": "^4.17.21",
-    "simple-git": "^2.48.0"
+    "nodegit": "^0.27.0",
+    "ts-node": "^10.4.0"
   }
 }
