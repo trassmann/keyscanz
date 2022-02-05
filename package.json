@@ -1,6 +1,6 @@
 {
   "name": "keyscanz",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Scan git repos for keys and mnemonics",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
