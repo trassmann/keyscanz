@@ -91,7 +91,7 @@ const getCommitKeys = async (commit: Commit): Promise<string[]> => {
   return diffKeys.flat();
 };
 
-const MAX_COMMITS = 3000;
+const MAX_COMMITS = 200;
 
 const defaultResults: Results = {
   hex: [],
@@ -110,6 +110,7 @@ const getKeys = async (
     console.log("Failed to clone repoUrl", err);
     return null;
   }
+
   const headCommit = await repo.getHeadCommit();
   const revWalk = repo.createRevWalk();
 
@@ -118,7 +119,7 @@ const getKeys = async (
   revWalk.sorting(Revwalk.SORT.TIME, Revwalk.SORT.REVERSE);
 
   const commits = await revWalk.getCommits(maxCommits);
-  const results = await asyncPool(100, commits, getCommitKeys);
+  const results = await asyncPool(15, commits, getCommitKeys);
 
   return results;
 };
