@@ -14,7 +14,7 @@ import asyncPool from "tiny-async-pool";
 import { randomString, validateMnemonic } from "./utils";
 
 const KEY_REGEX =
-  /(?<=["'])(?:\b[a-z]{3,8}\b[\s])(?:\b[a-z]{3,8}\b[\s]){10,23}(?:\b[a-z]{3,8}\b(?=["']))|(?:(0[xX])?[0-9a-fA-F]{64})/;
+  /(?<=["'])(?:\b[a-z]{3,8}\b[\s])(?:\b[a-z]{3,8}\b[\s]){10,23}(?:\b[a-z]{3,8}\b(?=["']))|(?:(0[xX])?[0-9a-fA-F]{64})|(?:\[\s*\d{1,3}\s*,\s*)(?:\d{1,3}\s*,\s*){30,62}(?:\d{1,3}\s*\])/;
 
 export interface Key {
   type: KeyType;
@@ -24,15 +24,24 @@ export interface Key {
 export interface Results {
   hex: string[];
   mnemonic: string[];
+  bytes: string[];
 }
 
 export enum KeyType {
   HEX = "HEX",
   MNEMONIC = "MNEMONIC",
+  BYTES = "BYTES",
 }
 
 export const createKeyData = (rawData: string = ""): Key => {
   const clean = rawData.trim();
+
+  if (clean.startsWith("[")) {
+    return {
+      type: KeyType.BYTES,
+      data: clean,
+    };
+  }
 
   if (clean.startsWith("0x")) {
     return {
@@ -96,6 +105,7 @@ const MAX_COMMITS = 200;
 const defaultResults: Results = {
   hex: [],
   mnemonic: [],
+  bytes: [],
 };
 
 const getKeys = async (
@@ -144,6 +154,10 @@ const scanRepo = async (repoUrl: string): Promise<Results> => {
 
     if (!key) {
       return keyResults;
+    }
+
+    if (key.type === KeyType.BYTES) {
+      keyResults.bytes.push(key.data);
     }
 
     if (key.type === KeyType.HEX) {
