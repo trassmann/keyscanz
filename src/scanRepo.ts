@@ -125,6 +125,7 @@ const getKeys = async (
   const commits = await revWalk.getCommits(maxCommits);
   const results = await asyncPool(15, commits, getCommitKeys);
 
+  await repo.cleanup();
   return results;
 };
 
