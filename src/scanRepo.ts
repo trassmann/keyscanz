@@ -14,7 +14,7 @@ import asyncPool from "tiny-async-pool";
 import { randomString, validateMnemonic } from "./utils";
 
 const KEY_REGEX =
-  /(?<=["'])(?:\b[a-z]{3,8}\b[\s])(?:\b[a-z]{3,8}\b[\s]){10,23}(?:\b[a-z]{3,8}\b(?=["']))|(?:(0[xX])?[0-9a-fA-F]{64})|(?:\[\s*\d{1,3}\s*,\s*)(?:\d{1,3}\s*,\s*){30,62}(?:\d{1,3},*\s*\])/;
+  /(?<=["'])(?:\b[a-z]{3,8}\b[\s])(?:\b[a-z]{3,8}\b[\s]){10,23}(?:\b[a-z]{3,8}\b(?=["']))|(?:(0[xX])?[0-9a-fA-F]{64})|(?:\[\s*\d{1,3}\s*,\s*)(?:\d{1,3}\s*,\s*){30,62}(?:\d{1,3},*\s*\])/m;
 
 export interface Key {
   type: KeyType;
