@@ -149,27 +149,30 @@ const scanRepo = async (repoUrl: string): Promise<Results> => {
     return defaultResults;
   }
 
-  return _.uniq(allKeys.flat()).reduce((keyResults, rawKey) => {
-    const key: Key = createKeyData(rawKey);
+  return _.uniq(allKeys.flat()).reduce(
+    (keyResults, rawKey) => {
+      const key: Key = createKeyData(rawKey);
 
-    if (!key) {
+      if (!key) {
+        return keyResults;
+      }
+
+      if (key.type === KeyType.BYTES) {
+        keyResults.bytes.push(key.data);
+      }
+
+      if (key.type === KeyType.HEX) {
+        keyResults.hex.push(key.data);
+      }
+
+      if (key.type === KeyType.MNEMONIC) {
+        keyResults.mnemonic.push(key.data);
+      }
+
       return keyResults;
-    }
-
-    if (key.type === KeyType.BYTES) {
-      keyResults.bytes.push(key.data);
-    }
-
-    if (key.type === KeyType.HEX) {
-      keyResults.hex.push(key.data);
-    }
-
-    if (key.type === KeyType.MNEMONIC) {
-      keyResults.mnemonic.push(key.data);
-    }
-
-    return keyResults;
-  }, defaultResults);
+    },
+    { ...defaultResults }
+  );
 };
 
 export default scanRepo;
