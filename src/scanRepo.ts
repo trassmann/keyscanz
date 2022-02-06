@@ -102,12 +102,6 @@ const getCommitKeys = async (commit: Commit): Promise<string[]> => {
 
 const MAX_COMMITS = 200;
 
-const defaultResults: Results = {
-  hex: [],
-  mnemonic: [],
-  bytes: [],
-};
-
 const getKeys = async (
   repoUrl: string,
   dataDir: string,
@@ -135,6 +129,12 @@ const getKeys = async (
 };
 
 const scanRepo = async (repoUrl: string): Promise<Results> => {
+  const defaultResults: Results = {
+    hex: [],
+    mnemonic: [],
+    bytes: [],
+  };
+
   const dataDir: string = `./data/${randomString()}`;
   const allKeys: string[][] = await getKeys(repoUrl, dataDir);
 
@@ -149,30 +149,27 @@ const scanRepo = async (repoUrl: string): Promise<Results> => {
     return defaultResults;
   }
 
-  return _.uniq(allKeys.flat()).reduce(
-    (keyResults, rawKey) => {
-      const key: Key = createKeyData(rawKey);
+  return _.uniq(allKeys.flat()).reduce((keyResults, rawKey) => {
+    const key: Key = createKeyData(rawKey);
 
-      if (!key) {
-        return keyResults;
-      }
-
-      if (key.type === KeyType.BYTES) {
-        keyResults.bytes.push(key.data);
-      }
-
-      if (key.type === KeyType.HEX) {
-        keyResults.hex.push(key.data);
-      }
-
-      if (key.type === KeyType.MNEMONIC) {
-        keyResults.mnemonic.push(key.data);
-      }
-
+    if (!key) {
       return keyResults;
-    },
-    { ...defaultResults }
-  );
+    }
+
+    if (key.type === KeyType.BYTES) {
+      keyResults.bytes.push(key.data);
+    }
+
+    if (key.type === KeyType.HEX) {
+      keyResults.hex.push(key.data);
+    }
+
+    if (key.type === KeyType.MNEMONIC) {
+      keyResults.mnemonic.push(key.data);
+    }
+
+    return keyResults;
+  }, defaultResults);
 };
 
 export default scanRepo;
