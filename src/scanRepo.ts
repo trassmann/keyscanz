@@ -9,7 +9,6 @@ import {
   Revwalk,
 } from "nodegit";
 import * as _ from "lodash";
-import asyncPool from "tiny-async-pool";
 
 import { randomString, validateMnemonic } from "./utils";
 
@@ -67,7 +66,7 @@ export const createKeyData = (rawData: string = ""): Key => {
   return null;
 };
 
-const getMatches = async (hunk: ConvenientHunk): Promise<string[]> => {
+const getHunkMatches = async (hunk: ConvenientHunk): Promise<string[]> => {
   const lines: DiffLine[] = await hunk.lines();
   return lines.reduce((matchesResults, line) => {
     const matches = KEY_REGEX.exec(line.content());
@@ -79,25 +78,41 @@ const getMatches = async (hunk: ConvenientHunk): Promise<string[]> => {
   }, []);
 };
 
-const getPatchLines = async (patch: ConvenientPatch): Promise<string[]> => {
+const getPatchMatches = async (patch: ConvenientPatch): Promise<string[]> => {
   const hunks: ConvenientHunk[] = await patch.hunks();
-  const lines: string[][] = await Promise.all(hunks.map(getMatches));
+  const matches: string[][] = [];
 
-  return lines.flat();
+  for (const hunk of hunks) {
+    const hunkMatches = await getHunkMatches(hunk);
+    matches.push(hunkMatches);
+  }
+
+  return matches.flat();
 };
 
-const getDiffKeys = async (diff: Diff) => {
-  const patches = await diff.patches();
-  const lines = await Promise.all(patches.map(getPatchLines));
+const getDiffMatches = async (diff: Diff) => {
+  const patches: ConvenientPatch[] = await diff.patches();
+  const matches: string[][] = [];
 
-  return lines.flat();
+  for (const patch of patches) {
+    if (patch.size() < 10) {
+      const patchMatches = await getPatchMatches(patch);
+      matches.push(patchMatches);
+    }
+  }
+
+  return matches.flat();
 };
 
-const getCommitKeys = async (commit: Commit): Promise<string[]> => {
-  const diffList = await commit.getDiff();
-  const diffKeys = await Promise.all(diffList.map(getDiffKeys));
+const getCommitMatches = async (commit: Commit): Promise<string[]> => {
+  const diffs: Diff[] = await commit.getDiff();
+  const matches: string[][] = [];
 
-  return diffKeys.flat();
+  for (const diff of diffs) {
+    const diffMatches = await getDiffMatches(diff);
+    matches.push(diffMatches);
+  }
+  return matches.flat();
 };
 
 const MAX_COMMITS = 200;
@@ -123,7 +138,7 @@ const getKeys = async (
   revWalk.sorting(Revwalk.SORT.TIME, Revwalk.SORT.REVERSE);
 
   const commits = await revWalk.getCommits(maxCommits);
-  const results = await asyncPool(15, commits, getCommitKeys);
+  const results = await Promise.all(commits.map(getCommitMatches));
 
   await repo.cleanup();
   return results;
